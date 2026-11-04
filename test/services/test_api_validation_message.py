@@ -9,10 +9,10 @@ from app.config import config
 
 def _post(path, content):
     with (
-        patch.dict(config.app, {"api_key": ""}),
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
         patch("app.controllers.v1.video.task_manager.add_task") as schedule,
         patch("app.controllers.v1.llm.llm.generate_script") as generate,
-        TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+        TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
     ):
         response = client.post(
             path, content=content, headers={"content-type": "application/json"}

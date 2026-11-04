@@ -40,14 +40,14 @@ def test_concurrent_task_deletions_do_not_return_server_error():
                 return remove(path, *args, **kwargs)
 
         with (
-            patch.dict(config.app, {'api_key': ''}),
+            patch.dict(config.app, {'api_key': 'http-fixture-key'}),
             patch.object(controller.sm, 'state', state),
             patch.object(controller.utils, 'task_dir', return_value=directory),
             patch.object(controller.os.path, 'exists', side_effect=synchronized_exists),
             patch.object(controller.shutil, 'rmtree', side_effect=sequential_removal),
             ThreadPoolExecutor(max_workers=2) as executor,
         ):
-            client = TestClient(asgi.get_application(), raise_server_exceptions=False)
+            client = TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False)
             responses = list(executor.map(lambda _: client.delete('/api/v1/tasks/task-1'), range(2)))
         assert sorted(response.status_code for response in responses) == [200, 200]
         assert not target.exists()
@@ -62,12 +62,12 @@ def test_delete_preserves_state_when_directory_still_exists(error):
         target = Path(directory, 'task-1')
         target.mkdir()
         with (
-            patch.dict(config.app, {'api_key': ''}),
+            patch.dict(config.app, {'api_key': 'http-fixture-key'}),
             patch.object(controller.sm, 'state', state),
             patch.object(controller.utils, 'task_dir', return_value=directory),
             patch.object(controller.shutil, 'rmtree', side_effect=error),
         ):
-            response = TestClient(asgi.get_application(), raise_server_exceptions=False).delete('/api/v1/tasks/task-1')
+            response = TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False).delete('/api/v1/tasks/task-1')
         assert response.status_code == 500
         assert target.is_dir()
         assert state.get_task('task-1') is not None

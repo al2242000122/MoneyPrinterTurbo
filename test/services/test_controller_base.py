@@ -106,16 +106,20 @@ class TestControllerAuthentication(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    def test_verify_token_allows_requests_when_key_is_not_configured(self):
-        """未配置 Key 时必须保留历史免认证行为，避免本地升级后中断。"""
+    def test_verify_token_rejects_requests_when_key_is_not_configured(self):
+        """Missing credentials must fail closed in the VideosIA fork."""
 
         config.app.pop("api_key", None)
-        self.assertIsNone(base.verify_token(self._request()))
+        with self.assertRaises(HttpException) as raised:
+            base.verify_token(self._request())
+        self.assertEqual(raised.exception.status_code, 503)
 
         for configured_key in (None, ""):
             with self.subTest(configured_key=configured_key):
                 config.app["api_key"] = configured_key
-                self.assertIsNone(base.verify_token(self._request()))
+                with self.assertRaises(HttpException) as raised:
+                    base.verify_token(self._request())
+                self.assertEqual(raised.exception.status_code, 503)
 
     def test_verify_token_rejects_missing_or_wrong_key(self):
         """

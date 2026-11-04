@@ -14,8 +14,8 @@ from app.services import task
 
 @pytest.mark.parametrize("field", ["text_fore_color", "stroke_color", "text_background_color"])
 def test_http_rejects_invalid_active_color_before_queue(field):
-    with patch.dict(config.app, {"api_key": ""}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
-        with TestClient(asgi.app) as client:
+    with patch.dict(config.app, {"api_key": "http-fixture-key"}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
+        with TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}) as client:
             response = client.post("/api/v1/videos", json={"video_subject": "Coffee", field: "#gg0000"})
         assert response.status_code == 400
         assert field in response.json()["message"]
@@ -49,8 +49,8 @@ def test_http_preserves_supported_pillow_colors_and_unused_stroke(colors):
     background = colors.get("text_background_color", False)
     if isinstance(background, str):
         Image.new("RGBA", (1, 1), background)
-    with patch.dict(config.app, {"api_key": ""}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
-        with TestClient(asgi.app) as client:
+    with patch.dict(config.app, {"api_key": "http-fixture-key"}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
+        with TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}) as client:
             response = client.post("/api/v1/videos", json={"video_subject": "Coffee", **colors})
         assert response.status_code == 200
         queued.assert_called_once()
@@ -61,8 +61,8 @@ def test_http_preserves_supported_pillow_colors_and_unused_stroke(colors):
     ("/api/v1/subtitle", {"video_script": "Coffee"}),
 ])
 def test_http_does_not_validate_colors_that_will_not_render(endpoint, payload):
-    with patch.dict(config.app, {"api_key": ""}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
-        with TestClient(asgi.app) as client:
+    with patch.dict(config.app, {"api_key": "http-fixture-key"}), patch.object(sm, "state", sm.MemoryState()), patch.object(controller.task_manager, "add_task") as queued:
+        with TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}) as client:
             response = client.post(endpoint, json={**payload, "text_fore_color": "unused-color"})
         assert response.status_code == 200
         queued.assert_called_once()

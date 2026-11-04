@@ -28,7 +28,7 @@ async def application_lifespan(_: FastAPI):
     configured_api_key = config.app.get("api_key", "")
     if configured_api_key in (None, ""):
         logger.warning(
-            "API key authentication is disabled; keep the API on a trusted network"
+            "API key is not configured; protected requests will be rejected"
         )
     elif isinstance(configured_api_key, str):
         # 只记录保护范围，不得输出 Key、长度或摘要，避免凭据进入日志系统。

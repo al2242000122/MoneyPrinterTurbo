@@ -18,14 +18,14 @@ class TestAPIAuthenticationHTTP(unittest.TestCase):
         config.app.clear()
         config.app.update(self.original_app_config)
 
-    def test_empty_key_preserves_existing_open_access(self):
-        """默认空 Key 不要求请求头，保证旧客户端和本地 WebUI 继续工作。"""
+    def test_empty_key_rejects_protected_requests(self):
+        """The VideosIA fork never interprets an empty key as open access."""
 
         config.app["api_key"] = ""
 
         response = self.client.get("/api/v1/tasks")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 503)
 
     def test_video_routes_require_matching_key_when_configured(self):
         """视频路由在启用保护后必须统一拒绝缺失和错误的 Key。"""

@@ -31,7 +31,7 @@ dependencies = [
     "dashscope==1.20.14",
     "azure-cognitiveservices-speech==1.41.1",
     "redis==5.2.0",
-    "python-multipart==0.0.30",
+    "python-multipart==0.0.33",
     "pyyaml==6.0.3",
     "requests==2.33.1",
     "packaging==24.2",
@@ -125,4 +125,9 @@ include = [
 package = true
 # MoviePy 2.2.1 caps Pillow below 12; patched Pillow is required for image decoding.
 # Keep this in sync with requirements-security.txt for container/legacy installs.
-override-dependencies = ["pillow>=13.0.0,<14"]
+override-dependencies = [
+    "pillow>=13.0.0,<14",
+    "multidict>=6.9.1",
+    "pyasn1>=0.6.5",
+    "setuptools>=84.1.0",
+]

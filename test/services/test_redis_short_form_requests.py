@@ -36,8 +36,8 @@ class TestRedisShortFormRequests(unittest.TestCase):
                 self.subTest(route=route),
                 patch.object(video_controller, "task_manager", self.manager),
                 patch.object(sm, "state", sm.MemoryState()),
-                patch.dict(config.app, {"api_key": ""}),
-                TestClient(asgi.app, raise_server_exceptions=False) as client,
+                patch.dict(config.app, {"api_key": "http-fixture-key"}),
+                TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
             ):
                 response = client.post(
                     f"/api/v1/{route}",

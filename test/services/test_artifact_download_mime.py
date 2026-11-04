@@ -25,10 +25,10 @@ def test_download_reports_artifact_media_type(filename, expected):
         payload = b'isolated download fixture'
         (task_dir / filename).write_bytes(payload)
         with (
-            patch.dict(config.app, {'api_key': ''}),
+            patch.dict(config.app, {'api_key': 'http-fixture-key'}),
             patch.object(controller.utils, 'task_dir', return_value=directory),
         ):
-            response = TestClient(asgi.get_application()).get(f'/api/v1/download/task-1/{filename}')
+            response = TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}).get(f'/api/v1/download/task-1/{filename}')
     assert response.status_code == 200
     assert response.content == payload
     assert response.headers['content-type'].split(';')[0] in (expected if isinstance(expected, tuple) else (expected,))

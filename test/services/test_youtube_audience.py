@@ -53,6 +53,7 @@ def test_audience_payload_and_snapshot_override(
         )
     assert result["success"] is True
     data = post.call_args.kwargs["data"]
+    assert [v for k, v in data if k == "containsSyntheticMedia"] == ["true"]
     expected = (extra or {}).get("selfDeclaredMadeForKids", configured)
     assert [v for k, v in data if k == "selfDeclaredMadeForKids"] == [
         str(expected).lower()
@@ -94,6 +95,7 @@ def test_other_platforms_ignore_youtube_audience(tmp_path, upload_config):
         )
     assert result["success"] is True
     assert "selfDeclaredMadeForKids" not in dict(post.call_args.kwargs["data"])
+    assert "containsSyntheticMedia" not in dict(post.call_args.kwargs["data"])
 
 
 @pytest.mark.parametrize("selected", [False, True])

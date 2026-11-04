@@ -9,10 +9,10 @@ from app.controllers.v1 import video as controller
 
 def _get(tmp_path, headers=None):
     with (
-        patch.dict(config.app, {"api_key": ""}),
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
         patch.object(controller.utils, "task_dir", return_value=str(tmp_path)),
     ):
-        return TestClient(asgi.get_application()).get(
+        return TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}).get(
             "/api/v1/stream/empty.srt", headers=headers or {}
         )
 

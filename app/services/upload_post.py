@@ -233,6 +233,8 @@ class UploadPostService:
                     data.append(('platform[]', platform))
 
                 if has_youtube:
+                    # Disclosure must not depend on optional generated metadata.
+                    data.append(('containsSyntheticMedia', "true"))
                     # multipart 表单使用小写布尔字符串，且不能依赖 LLM 元数据
                     # 是否存在；只要发布到 YouTube，就显式传递用户的受众声明。
                     data.append(('selfDeclaredMadeForKids', str(made_for_kids).lower()))
@@ -250,7 +252,6 @@ class UploadPostService:
                         data.append(('youtube_description', youtube_extra["youtube_description"]))
                     for tag in youtube_extra.get("tags", []):
                         data.append(('tags[]', tag))
-                    data.append(('containsSyntheticMedia', "true"))
 
                 headers = {'Authorization': f'Apikey {self.api_key}'}
 

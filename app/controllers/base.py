@@ -48,16 +48,15 @@ def verify_token(
     request: Request,
     x_api_key: Annotated[str | None, Header(alias="x-api-key")] = None,
 ):
-    """按配置决定是否校验 API Key。
-
-    空 Key 保留现有的本地免认证模式；管理员显式配置非空 Key 后，API
-    路由和任务产物下载都会要求客户端通过 ``x-api-key`` 请求头提供同一
-    个值。参数声明同时让 Swagger 展示该请求头，便于受保护环境调试。
-    """
+    """Require a configured API key; an empty configuration fails closed."""
 
     configured_key = config.app.get("api_key", "")
     if configured_key in (None, ""):
-        return None
+        raise HttpException(
+            task_id=get_task_id(request),
+            status_code=503,
+            message="API key is not configured",
+        )
 
     # 配置项必须是字符串。这里拒绝列表、数字等错误类型，避免字符串隐式
     # 转换产生难以发现的认证行为；错误信息也不包含实际 Key。

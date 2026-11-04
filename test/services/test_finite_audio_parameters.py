@@ -14,10 +14,10 @@ from app.services import state as sm
 @pytest.mark.parametrize("field", ["voice_rate", "voice_volume", "bgm_volume"])
 def test_nonfinite_audio_values_fail_before_background_work(path, field, number):
     with (
-        patch.dict(config.app, {"api_key": ""}),
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
         patch.object(sm, "state", sm.MemoryState()),
         patch("app.controllers.v1.video.task_manager.add_task") as schedule,
-        TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+        TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
     ):
         response = client.post(path, content='{"video_subject":"test","video_script":"hello","' + field + '":' + number + '}', headers={"content-type": "application/json"})
     assert response.status_code == 400

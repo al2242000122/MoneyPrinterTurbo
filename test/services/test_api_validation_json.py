@@ -17,10 +17,10 @@ from app.config import config
 @pytest.mark.parametrize('path,field', [('/api/v1/videos', 'n_threads'), ('/api/v1/terms', 'amount')])
 def test_rejected_nonfinite_json_numbers_return_validation_response(number, path, field):
     with (
-        patch.dict(config.app, {'api_key': ''}),
+        patch.dict(config.app, {'api_key': 'http-fixture-key'}),
         patch('app.controllers.v1.video.task_manager.add_task') as schedule,
         patch('app.controllers.v1.llm.llm.generate_terms') as generate,
-        TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+        TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
     ):
         response = client.post(
             path,
@@ -59,8 +59,8 @@ def test_validator_exception_context_is_serializable():
 
 def test_normal_error_details_remain_available():
     instance = asgi.get_application()
-    with patch.dict(config.app, {'api_key': ''}):
-        response = TestClient(instance).post('/api/v1/terms', json={'amount': 0})
+    with patch.dict(config.app, {'api_key': 'http-fixture-key'}):
+        response = TestClient(instance, headers={'x-api-key': 'http-fixture-key'}).post('/api/v1/terms', json={'amount': 0})
     assert response.status_code == 400
     error = response.json()['data'][0]
     assert error['type'] == 'greater_than_equal'
@@ -82,9 +82,9 @@ def test_unsafe_font_name_returns_403_not_400():
         'font_name': '../etc/passwd',
     }
     with (
-        patch.dict(config.app, {'api_key': ''}),
+        patch.dict(config.app, {'api_key': 'http-fixture-key'}),
         patch('app.controllers.v1.video.task_manager.add_task') as schedule,
-        TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+        TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
     ):
         response = client.post('/api/v1/videos', json=payload)
     assert response.status_code == 403, response.text
@@ -100,9 +100,9 @@ def test_unknown_font_name_returns_404():
         'font_name': 'this-font-does-not-exist.ttf',
     }
     with (
-        patch.dict(config.app, {'api_key': ''}),
+        patch.dict(config.app, {'api_key': 'http-fixture-key'}),
         patch('app.controllers.v1.video.task_manager.add_task') as schedule,
-        TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+        TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
     ):
         response = client.post('/api/v1/videos', json=payload)
     assert response.status_code == 404, response.text
@@ -128,10 +128,10 @@ def test_valid_font_name_still_reaches_scheduler():
         font_dir.mkdir()
         (font_dir / 'custom.ttf').write_bytes(b'font file')
         with (
-            patch.dict(config.app, {'api_key': ''}),
+            patch.dict(config.app, {'api_key': 'http-fixture-key'}),
             patch('app.controllers.v1.video.utils.font_dir', return_value=str(font_dir)),
             patch('app.controllers.v1.video.task_manager.add_task') as schedule,
-            TestClient(asgi.get_application(), raise_server_exceptions=False) as client,
+            TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"}, raise_server_exceptions=False) as client,
         ):
             response = client.post('/api/v1/videos', json=payload)
     assert response.status_code == 200, response.text

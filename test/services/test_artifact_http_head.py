@@ -16,10 +16,10 @@ def client(tmp_path):
     task.mkdir()
     (task / "final.mp4").write_bytes(b"ten bytes!")
     (task / "empty.mp4").touch()
-    with patch.dict(config.app, {"api_key": ""}), patch.object(
+    with patch.dict(config.app, {"api_key": "http-fixture-key"}), patch.object(
         controller.utils, "task_dir", return_value=str(tmp_path)
     ):
-        yield TestClient(asgi.get_application())
+        yield TestClient(asgi.get_application(), headers={"x-api-key": "http-fixture-key"})
 
 
 @pytest.mark.parametrize("endpoint", ["stream", "download"])
@@ -57,7 +57,10 @@ def test_empty_artifact_metadata(client, endpoint):
 @pytest.mark.parametrize("endpoint", ["stream", "download"])
 def test_head_retains_authentication_and_missing_file_status(client, endpoint):
     with patch.dict(config.app, {"api_key": "head-test-key"}):
+        # This assertion deliberately has no credential, unlike artifact metadata cases.
+        client.headers.pop("x-api-key")
         assert client.head(f"/api/v1/{endpoint}/task/final.mp4").status_code == 401
+    client.headers["x-api-key"] = "http-fixture-key"
     response = client.head(f"/api/v1/{endpoint}/task/missing.mp4")
     assert response.status_code == 404
     assert response.content == b""
