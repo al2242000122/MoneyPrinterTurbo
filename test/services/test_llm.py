@@ -2792,8 +2792,11 @@ class TestSocialMetadata(unittest.TestCase):
             '"hashtags":["#Tokyo","#Coffee","#Shorts"]}'
         )
 
-        with patch.object(llm, "_generate_response", return_value=llm_response):
-            response = TestClient(app).post(
+        with (
+            patch.dict(config.app, {"api_key": "http-fixture-key"}),
+            patch.object(llm, "_generate_response", return_value=llm_response),
+        ):
+            response = TestClient(app, headers={"x-api-key": "http-fixture-key"}).post(
                 "/api/v1/social-metadata",
                 json=request_body,
             )

@@ -19,10 +19,10 @@ class TestVideoTermItems(unittest.TestCase):
                 manager = InMemoryTaskManager(0)
                 state = sm.MemoryState()
                 with (
-                    patch.dict(config.app, {"api_key": ""}),
+                    patch.dict(config.app, {"api_key": "http-fixture-key"}),
                     patch.object(sm, "state", state),
                     patch.object(video_controller, "task_manager", manager),
-                    TestClient(asgi.app) as client,
+                    TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}) as client,
                 ):
                     response = client.post("/api/v1/videos", json={
                         "video_subject": "Coffee", "video_terms": terms,
@@ -37,10 +37,10 @@ class TestVideoTermItems(unittest.TestCase):
             with self.subTest(terms=terms):
                 manager = InMemoryTaskManager(0)
                 with (
-                    patch.dict(config.app, {"api_key": ""}),
+                    patch.dict(config.app, {"api_key": "http-fixture-key"}),
                     patch.object(sm, "state", sm.MemoryState()),
                     patch.object(video_controller, "task_manager", manager),
-                    TestClient(asgi.app) as client,
+                    TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"}) as client,
                 ):
                     response = client.post("/api/v1/videos", json={
                         "video_subject": "Coffee", "video_terms": terms,

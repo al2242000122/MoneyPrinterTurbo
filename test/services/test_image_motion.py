@@ -28,11 +28,11 @@ def test_api_motion_reaches_task_queue_and_rejects_invalid_input():
     from app.controllers.v1 import video as controller
 
     with (
-        patch.dict(config.app, {"api_key": ""}),
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
         patch.object(controller.task_manager, "add_task") as enqueue,
         patch.object(controller.sm.state, "update_task"),
     ):
-        client = TestClient(asgi.app)
+        client = TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"})
         for value, expected in ((None, "zoom"), ("static", "static"), ("zoom", "zoom")):
             payload = {"video_subject": "test", "subtitle_enabled": False}
             if value is not None:

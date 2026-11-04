@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.asgi import app
+from app.config import config
 from app.services import llm
 
 
@@ -95,8 +96,11 @@ def test_social_metadata_api_uses_cleaned_tags_without_displacing_valid_ones(pla
         },
         ensure_ascii=False,
     )
-    with patch.object(llm, "_generate_response", return_value=response_text):
-        response = TestClient(app).post(
+    with (
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
+        patch.object(llm, "_generate_response", return_value=response_text),
+    ):
+        response = TestClient(app, headers={"x-api-key": "http-fixture-key"}).post(
             "/api/v1/social-metadata",
             json={"video_subject": "旅行", "platform": platform},
         )
@@ -118,8 +122,11 @@ def test_keycap_tags_do_not_displace_other_youtube_tags():
         },
         ensure_ascii=False,
     )
-    with patch.object(llm, "_generate_response", return_value=response_text):
-        response = TestClient(app).post(
+    with (
+        patch.dict(config.app, {"api_key": "http-fixture-key"}),
+        patch.object(llm, "_generate_response", return_value=response_text),
+    ):
+        response = TestClient(app, headers={"x-api-key": "http-fixture-key"}).post(
             "/api/v1/social-metadata",
             json={"video_subject": "旅行", "platform": "youtube_shorts"},
         )

@@ -2,3 +2,6 @@
 # Use: uv pip install --overrides requirements-security.txt -r requirements.txt
 # Keep in sync with [tool.uv].override-dependencies in pyproject.toml.
 pillow>=13.0.0,<14
+multidict>=6.9.1
+pyasn1>=0.6.5
+setuptools>=84.1.0

@@ -373,7 +373,7 @@ def generate_script(task_id, params):
             custom_system_prompt=params.custom_system_prompt,
         )
     else:
-        logger.debug(f"video script: \n{video_script}")
+        logger.debug("using supplied video script")
 
     if not video_script:
         _mark_task_failed(task_id, "script", "failed to generate video script")

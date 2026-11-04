@@ -6,9 +6,9 @@
 # API Service / API 服务
 # =============================================================================
 # Log level: DEBUG, INFO, WARNING, or ERROR.
-log_level = "DEBUG"
+log_level = "WARNING"
 # Use 127.0.0.1 for local-only access. 0.0.0.0 listens on all network interfaces.
-listen_host = "0.0.0.0"
+listen_host = "127.0.0.1"
 listen_port = 8080
 
 [diagnostics]
@@ -39,12 +39,12 @@ codex_image_timeout = 300
 openai_chatgpt_model_name = ""
 openai_chatgpt_timeout = ""
 
-# Optional protection for API routes and generated files under /tasks.
-# Leave empty for local backward-compatible access. When configured, clients
+# Required protection for API routes and generated files under /tasks.
+# Empty keys reject protected requests in this VideosIA fork. Clients
 # must send the same value in the x-api-key request header. Keep real keys only
 # in config.toml and never commit them.
-# API 路由和 /tasks 生成文件的可选保护。留空时保持本地免认证行为；
-# 配置后客户端必须通过 x-api-key 请求头传入同一个值。
+# VideosIA: API 路由和 /tasks 文件必须配置非空密钥；空值会拒绝请求。
+# 客户端必须通过 x-api-key 请求头传入同一个值。
 # Task artifact requests also require this header; a browser address bar cannot
 # attach custom headers, so authenticated clients should download them via HTTP.
 # 任务产物下载同样需要该请求头；浏览器地址栏无法附加自定义请求头，启用鉴权后

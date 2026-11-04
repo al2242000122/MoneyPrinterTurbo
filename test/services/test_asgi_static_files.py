@@ -12,8 +12,8 @@ from app.utils import utils
 class TestTaskStaticFiles(unittest.TestCase):
     def setUp(self):
         self.original_app_config = dict(config.app)
-        # 普通静态文件测试验证默认开放模式，不能依赖开发者本机是否启用了 Key。
-        config.app["api_key"] = ""
+        # Artifact tests authenticate explicitly; missing-key behavior has dedicated cases.
+        config.app["api_key"] = "static-fixture-key"
         self.client = TestClient(asgi.app)
 
     def tearDown(self):
@@ -28,7 +28,10 @@ class TestTaskStaticFiles(unittest.TestCase):
             artifact = task_path / "artifact.txt"
             artifact.write_text("task artifact", encoding="utf-8")
 
-            response = self.client.get(f"/tasks/{task_path.name}/{artifact.name}")
+            response = self.client.get(
+                f"/tasks/{task_path.name}/{artifact.name}",
+                headers={"x-api-key": "static-fixture-key"},
+            )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.text, "task artifact")
@@ -59,6 +62,13 @@ class TestTaskStaticFiles(unittest.TestCase):
         self.assertEqual(wrong.status_code, 401)
         self.assertEqual(accepted.status_code, 200)
         self.assertEqual(accepted.text, "protected task artifact")
+
+    def test_empty_key_never_opens_task_artifacts(self):
+        config.app["api_key"] = ""
+
+        response = self.client.get("/tasks/example/artifact.txt")
+
+        self.assertEqual(response.status_code, 503)
 
     def test_configured_key_does_not_protect_health_or_docs(self):
         """健康检查和 Swagger 文档保持公开，方便部署探针与人工配置。"""
@@ -104,7 +114,10 @@ class TestTaskStaticFiles(unittest.TestCase):
             except (NotImplementedError, OSError) as error:
                 self.skipTest(f"symbolic links are unavailable: {error}")
 
-            response = self.client.get(f"/tasks/{task_path.name}/{exposed_link.name}")
+            response = self.client.get(
+                f"/tasks/{task_path.name}/{exposed_link.name}",
+                headers={"x-api-key": "static-fixture-key"},
+            )
 
         self.assertEqual(response.status_code, 404)
         self.assertNotIn(b"must not be served", response.content)

@@ -1,5 +1,6 @@
 """检查 MoneyPrinterTurbo 是否存在可用的新正式版本。"""
 
+import os
 import threading
 import time
 from collections.abc import Callable
@@ -211,4 +212,7 @@ _ASYNC_UPDATE_CHECKER = AsyncUpdateChecker()
 
 def poll_available_update(current_version: str) -> UpdateCheckSnapshot:
     """读取全局后台检查器状态，避免不同 Streamlit 会话重复请求 GitHub。"""
+    # The local VideosIA fork makes this background network request opt-in.
+    if os.environ.get("MPT_CHECK_UPDATES") != "1":
+        return UpdateCheckSnapshot(complete=True)
     return _ASYNC_UPDATE_CHECKER.poll(current_version)

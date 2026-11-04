@@ -573,8 +573,8 @@ class TestVideoControllerCreateHTTP(unittest.TestCase):
 
     def setUp(self):
         self.original_app_config = dict(config.app)
-        config.app["api_key"] = ""
-        self.client = TestClient(asgi.app)
+        config.app["api_key"] = "http-fixture-key"
+        self.client = TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"})
 
     def tearDown(self):
         config.app.clear()
@@ -595,14 +595,14 @@ class TestVideoControllerListHTTP(unittest.TestCase):
     def test_task_page_size_is_bounded_before_state_scan(self):
         """A client cannot request an unbounded Redis scan and response body."""
         with (
-            patch.dict(config.app, {"api_key": ""}),
+            patch.dict(config.app, {"api_key": "http-fixture-key"}),
             patch.object(
                 video_controller.sm.state,
                 "get_all_tasks",
                 return_value=([], 0),
             ) as get_all,
         ):
-            client = TestClient(asgi.app)
+            client = TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"})
             allowed = client.get("/api/v1/tasks?page_size=1000")
             rejected = client.get("/api/v1/tasks?page_size=1001")
 
@@ -617,8 +617,8 @@ class TestVideoControllerDeleteHTTP(unittest.TestCase):
     def setUp(self):
         self.original_app_config = dict(config.app)
         # 这些用例只验证任务删除协议；鉴权行为由独立测试覆盖。
-        config.app["api_key"] = ""
-        self.client = TestClient(asgi.app)
+        config.app["api_key"] = "http-fixture-key"
+        self.client = TestClient(asgi.app, headers={"x-api-key": "http-fixture-key"})
 
     def tearDown(self):
         config.app.clear()

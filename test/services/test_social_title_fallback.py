@@ -71,8 +71,8 @@ def test_social_metadata_api_missing_key_uses_first_sentence(script, expected):
     app = FastAPI()
     app.include_router(llm_controller.router)
     with (
-        patch.object(config, "app", {"llm_provider": "openai", "openai_api_key": ""}),
-        TestClient(app) as client,
+        patch.object(config, "app", {"llm_provider": "openai", "openai_api_key": "", "api_key": "http-fixture-key"}),
+        TestClient(app, headers={"x-api-key": "http-fixture-key"}) as client,
     ):
         response = client.post(
             "/api/v1/social-metadata",

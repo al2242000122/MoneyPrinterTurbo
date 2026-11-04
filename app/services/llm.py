@@ -1003,7 +1003,7 @@ def generate_script(
     if not final_script:
         logger.error("failed to generate video script after retries")
     else:
-        logger.success(f"completed: \n{final_script}")
+        logger.success("video script generation completed")
     return final_script.strip()
 
 
